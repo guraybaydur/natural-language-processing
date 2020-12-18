@@ -148,17 +148,22 @@ import ssl
 import re
 import os
 
-try:
-    _create_unverified_https_context = ssl._create_unverified_context
-except AttributeError:
-    pass
-else:
-    ssl._create_default_https_context = _create_unverified_https_context
+# try:
+#     _create_unverified_https_context = ssl._create_unverified_context
+# except AttributeError:
+#     pass
+# else:
+#     ssl._create_default_https_context = _create_unverified_https_context
+#
+# nltk.download('stopwords')
+#
+# from nltk.corpus import stopwords
+# print(stopwords.words('turkish'))
 
-nltk.download('stopwords')
+Dict = {"adss":-0.123,"xxx": -0.2141}
 
-from nltk.corpus import stopwords
-print(stopwords.words('turkish'))
+for key in Dict:
+    print(key + ": " + str(Dict[key]))
 
 
 

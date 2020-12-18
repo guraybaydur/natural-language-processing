@@ -34,11 +34,12 @@ print(corpus)
 print(len(corpus))
 print("Number of documents: " + str(number_of_documents))
 
-reverse_idf_scores = {}
+reverse_tf_idf_scores = {}
 for word in corpus:
     #if word in ['acaba', 'ama', 'aslında', 'az', 'bazı', 'belki', 'biri', 'birkaç', 'birşey', 'biz', 'bu', 'çok', 'çünkü', 'da', 'daha', 'de', 'defa', 'diye', 'eğer', 'en', 'gibi', 'hem', 'hep', 'hepsi', 'her', 'hiç', 'için', 'ile', 'ise', 'kez', 'ki', 'kim', 'mı', 'mu', 'mü', 'nasıl', 'ne', 'neden', 'nerde', 'nerede', 'nereye', 'niçin', 'niye', 'o', 'sanki', 'şey', 'siz', 'şu', 'tüm', 've', 'veya', 'ya', 'yani']:
-    if word == "yapılan":
+    if word:
         document_frequency = 0
+        term_frequency=0
         for folder_name in os.listdir(general_folder_path):
             if folder_name not in [".DS_Store", "corpora"]:
                 print(folder_name)
@@ -47,11 +48,32 @@ for word in corpus:
                     if re.search(regex, file):
                         f = open(general_folder_path + folder_name + "/" + file, "r")
                         document = f.readlines()
+                        document_frequency_updated = False
                         for line in document:
                             stripped_token = line.strip()
                             if word == stripped_token:
-                                print("Word: " + word + " found in document: " + general_folder_path + folder_name + "/" + file)
-                                document_frequency += 1
-                                break
-        reverse_idf_scores[word] = round(math.log(document_frequency / number_of_documents, 10), 5)
-print(reverse_idf_scores)
+                                #print(
+                                 #   "Word: " + word + " found in document: " + general_folder_path + folder_name + "/" + file)
+                                if not document_frequency_updated:
+                                    document_frequency += 1
+                                    document_frequency_updated = True
+                                term_frequency += 1
+        print("word: " + word)
+        print("math.log(term_frequency, 10): " + str(math.log(term_frequency, 10)))
+        #reverse_tf_idf_scores[word] = (1/round(math.log(term_frequency, 10), 5)) * round(math.log(document_frequency / number_of_documents, 10), 5)
+        print("document_frequency: " + str(term_frequency))
+        print("round(math.log(term_frequency, 10), 5): " + str(round(math.log(term_frequency, 10), 5)))
+        print("document_frequency: " + str(document_frequency))
+        print("number_of_documents: " + str(number_of_documents))
+        print("round(math.log(document_frequency / number_of_documents, 10), 5): " + str(round(math.log(document_frequency / number_of_documents, 10), 5)))
+        reverse_tf_idf_scores[word] = (1 / (1 + round(math.log(term_frequency, 10), 5))) * round(math.log(document_frequency / number_of_documents, 10), 5)
+
+print(reverse_tf_idf_scores)
+
+output_file_name = general_folder_path + "/corpora/reverse_tf_idf_scores"
+f = open(output_file_name, "a")
+
+for key in reverse_tf_idf_scores:
+    f.write(key + " " + str(reverse_tf_idf_scores[key]) + "\n")
+
+f.close()
