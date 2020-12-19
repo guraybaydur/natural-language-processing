@@ -23,7 +23,7 @@ def load_vocab(vocab_dir, name):
     vocab = []
     with open(vocab_dir + name, 'r', encoding='utf8') as f:
         for i in f.readlines():
-            vocab.append(i.strip())
+            vocab.append(i.rstrip('\n'))
     return vocab
 
 def generate_word_probabilities(corpus, vocab):
