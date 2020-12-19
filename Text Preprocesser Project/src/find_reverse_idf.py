@@ -58,10 +58,11 @@ for word in corpus:
                                     document_frequency += 1
                                     document_frequency_updated = True
                                 term_frequency += 1
+
         print("word: " + word)
         print("math.log(term_frequency, 10): " + str(math.log(term_frequency, 10)))
         #reverse_tf_idf_scores[word] = (1/round(math.log(term_frequency, 10), 5)) * round(math.log(document_frequency / number_of_documents, 10), 5)
-        print("document_frequency: " + str(term_frequency))
+        print("term_frequency: " + str(term_frequency))
         print("round(math.log(term_frequency, 10), 5): " + str(round(math.log(term_frequency, 10), 5)))
         print("document_frequency: " + str(document_frequency))
         print("number_of_documents: " + str(number_of_documents))
