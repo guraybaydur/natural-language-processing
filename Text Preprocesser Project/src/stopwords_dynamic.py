@@ -9,7 +9,7 @@ def generate_vocab(data_dir, filename):
     with open(data_dir + filename, 'r', encoding='utf8') as f:
         for tokenlist in conllu.parse_incr(f):
             for i in tokenlist:
-                if i['upos'] != 'PUNCT':
+                if i['upos'] != 'AUX'and i['upos'] != 'PUNCT':
                     word = i['form']
                     if word not in vocab:
                         vocab.append(word)
