@@ -13,6 +13,8 @@ def check_suffixes(word,vocab):
             'nde', 'dan', 'tan', 'den', 'ten', 'la', 'le', 'ın', 'in', 'un', 'ün', 'ca', 'ce', 'nı', 'ni', 'nu', 'nü',
             'na', 'ne', 'da', 'de', 'ta', 'te', 'ki', 'sı', 'si', 'su', 'sü', 'yı', 'yi', 'yu', 'yü', 'ya', 'ye',
                    'y','lı', 'li', 'lu', 'lü']
+
+
     if word in vocab:
         return word
 
