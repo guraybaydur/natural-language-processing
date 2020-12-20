@@ -121,21 +121,16 @@ def produce_correction(possible, word):  # This method is used to implement an a
 
 
 def create_predictions(word):  # This function creates all 1 Damerau-Levenshtein edit distance words for the given word.
-    possible = [[]]
+    possible = []
     possible = insertion(word, possible)
-    possible.append([])
     possible = deletion(word, possible)
-    possible.append([])
     possible = substitution(word, possible)
-    possible.append([])
     possible = transpose(word, possible)
     return possible
 
 
 def get_alphabet():  # returns alphabet
-    list = [i for i in string.ascii_lowercase]
-    list.append('_')
-    list.append('-')
+    list = [i for i in 'abcçdefgğhıijklmnoöprsştuüvyz']
     return list
 
 
@@ -145,7 +140,7 @@ def insertion(word, possible):  # (N+1)*alphabet insertion
     for i in range(n+1):
         for j in alph:
             temp = word[0:i] + j + word[i:]
-            possible[0].append(temp)
+            possible.append(temp)
     return possible
 
 
@@ -153,7 +148,7 @@ def deletion(word, possible):  # N deletion
     n = len(word)
     for i in range(n):
         temp = word[0:i] + word[i+1:]
-        possible[1].append(temp)
+        possible.append(temp)
     return possible
 
 
@@ -163,7 +158,7 @@ def substitution(word, possible):  # N*alphabet substitution
     for i in range(n):
         for j in alph:
             temp = word[0:i] + j + word[i+1:]
-            possible[2].append(temp)
+            possible.append(temp)
     return possible
 
 
@@ -173,7 +168,7 @@ def transpose(word, possible):  # N-1 transpose
         p1 = word[i]
         p2 = word[i+1]
         temp = word[0:i] + p2 + p1 + word[i+2:]
-        possible[3].append(temp)
+        possible.append(temp)
     return possible
 
 
