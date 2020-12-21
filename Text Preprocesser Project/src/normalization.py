@@ -5,9 +5,9 @@ from spelling_correction import create_predictions
 import re
 import itertools
 
-def generate_vocab(data_dir, filename):
+def generate_vocab():
     vocab = []
-    with open(data_dir + filename, 'r', encoding='utf8') as f:
+    with open('../datasets/UD_Turkish-BOUN/' + 'tr_boun-ud-train.conllu', 'r', encoding='utf8') as f:
         for tokenlist in conllu.parse_incr(f):
             for i in tokenlist:
                 if i['upos'] != 'AUX' and i['upos'] != 'PUNCT':
@@ -24,18 +24,21 @@ def generate_vocab(data_dir, filename):
             f.write('%s\n' % i)
 
 
-def load_vocab(data_dir, labelled_data):
+def load_vocab():
     if not (os.path.exists('../vocabulary/normalization_vocab.txt')):
-        generate_vocab(data_dir, labelled_data)
+        generate_vocab()
     vocab = []
     with open('../vocabulary/normalization_vocab.txt', 'r', encoding='utf8') as f:
         for i in f.readlines():
             vocab.append(i.rstrip('\n'))
     return vocab
 
+def load_corpus():
+    corpus = open('../datasets/UD_Turkish-BOUN/' + 'tr_boun-ud-train.txt', 'r', encoding='utf8').read().replace('\n', ' ')
+    return corpus
 
-def generate_word_probabilities(corpus, vocab):
-    corpus = corpus.split()
+def generate_word_probabilities(vocab):
+    corpus = load_corpus().split()
     size = len(corpus)
     probs = np.zeros([len(vocab)])
     for i in range(len(vocab)):
@@ -44,10 +47,9 @@ def generate_word_probabilities(corpus, vocab):
     np.save('../vocabulary/word_probs.npy', probs)
 
 
-def load_word_probabilites(corpus, vocab):
+def load_word_probabilites(vocab):
     if not (os.path.exists('../vocabulary/word_probs.npy')):
-        generate_word_probabilities(corpus, vocab)
-
+        generate_word_probabilities(vocab)
     word_prob = np.load('../vocabulary/word_probs.npy')
     return word_prob
 
@@ -75,6 +77,17 @@ def load_all_possible_words(vocab):
 
 
 def search_error(word, vocab, all_pos, word_prob):  # spelling error correction
+    '''
+
+    Args:
+        word: input word to correct its spelling
+        vocab:
+        all_pos: list of all possible words that are one edit distance away from the all the words in the vocab
+        word_prob: prior word probabilities generated on the corpus
+
+    Returns: corrected word
+
+    '''
     if word in vocab:
         return word
     else:
@@ -91,30 +104,41 @@ def search_error(word, vocab, all_pos, word_prob):  # spelling error correction
             return max_prob_word
 
 
-def string_normalize(text, vocab, all_pos, word_prob):
+def normalize(token):
+    '''
+
+    Args:
+        token: input token to be normalized
+
+    Returns: Normalized token
+
+    '''
+    # accent normalization pairs
     pattern_subs = {'ıcam$':'acağım', 'cam$':'acağım', 'icem$':'eceğim', 'cem$':'eceğim', 'om$':'orum', 'ucaz$':'acağız',
                     'icez$':'eceğiz', 'am$':'ayım', 'em$':'eyim', 'mişin$':'mişsin', 'muşun$':'muşsun', 'oz$':'oruz'}
-
+    # ascii pairs
     ascii_pairs = {'i':'ı', 'u':'ü', 'o':'ö', 'g':'ğ', 'c':'ç', 's': 'ş'}
-    words = text.split()  # apply true tokenization instead of just splitting
-    corrected_words = []
-    for i in words:  # check if it is only punctuation
-        temp_word = letter_case_transformation(i)
-        temp_word = accent_normalization(temp_word, pattern_subs)
-        temp_word = search_error(temp_word, vocab, all_pos, word_prob)
-        if temp_word not in vocab: # apply de-asciification
-            temp_word = deascification(temp_word, vocab, ascii_pairs)
-        corrected_words.append(temp_word)
-    new_text = ' '.join(corrected_words)
-    return new_text
+    vocab = load_vocab()
+    word_prob = load_word_probabilites(vocab)
+    all_pos = load_all_possible_words(vocab)
+    # normalization
+    if token in vocab:
+        return token
+    temp_word = letter_case_transformation(token)
+    temp_word = accent_normalization(temp_word, pattern_subs)
+    if len(set(temp_word).intersection(set(ascii_pairs.keys()))) > 0:
+        temp_word = deascification(temp_word, vocab, ascii_pairs)
+    temp_word = search_error(temp_word, vocab, all_pos, word_prob)
+
+    return temp_word
 
 
-def letter_case_transformation(word):
+def letter_case_transformation(word): # performs letter case transformation
     if '\'' not in word:  # might be a proper noun, or sentence beginning
         if not word.islower() and not word.isupper():  # mixed case
-            if word[0].isupper() and word[1:].islower():  # assume proper noun or sentence beginning
+            if word[0].isupper() and word[1:].islower():  # first char is upper left is lower assume proper noun or sentence beginning
                 return word
-        return word.lower()
+        return word.lower() # erroneous mixed case, lowercase the word
     else:
         size = len(word)
         pos = word.find('\'')
@@ -125,15 +149,16 @@ def letter_case_transformation(word):
     return word
 
 
-def accent_normalization(word, patterns):  # covers some of the cases
+def accent_normalization(word, patterns):  # normalizes accented writing using set of predefined dictionary
     temp = word
-    for key, value in patterns.items():
+    for key, value in patterns.items(): # find accented writing and substitute with true form
         temp = re.sub(key, value, temp)
         if temp != word:
             break
     return temp
 
-def deascification(word, vocab, ascii_pairs):
+
+def deascification(word, vocab, ascii_pairs): # generates all possible combinations non-ascii characters until find a match in the vocab
     keys = list(ascii_pairs.keys())
     subset_keys = generate_subsets(keys)
     temp_word = word
@@ -142,20 +167,20 @@ def deascification(word, vocab, ascii_pairs):
         for j in i:
             for k in j:
                 word = re.sub(k, ascii_pairs[k], word)
-            if word in vocab:
+            if word in vocab: # if de-asciified word is in the vocab, return it
                 changed = True
                 break
         if changed:
             break
     if changed:
         return word
-    else:
+    else: # if no combination in the vocab, return original word
         return temp_word
 
 
 
 
-def generate_subsets(values):
+def generate_subsets(values): # creates all subsets of elements in a given list
     subsets = []
     for i in range(len(values)):
         subsets.append(list(itertools.combinations(values, i+1)))
@@ -165,22 +190,16 @@ def generate_subsets(values):
 
 
 if __name__ == '__main__':
-    data_dir = '../../../UD_Turkish-BOUN/'
-    labelled_data = 'tr_boun-ud-train.conllu'
-    corpus_name = 'tr_boun-ud-train.txt'
-    vocab = load_vocab(data_dir, labelled_data)
-    corpus = open(data_dir + corpus_name, 'r', encoding='utf8').read().replace('\n', ' ')
-    word_prob = load_word_probabilites(corpus, vocab)
-    all_pos = load_all_possible_words(vocab)
-    text = 'askim'
-    new_text = string_normalize(text, vocab, all_pos, word_prob)
+    # data_dir = '../../../UD_Turkish-BOUN/'
+    # labelled_data = 'tr_boun-ud-train.conllu'
+    # corpus_name = 'tr_boun-ud-train.txt'
+    # vocab = load_vocab(data_dir, labelled_data)
+    # corpus = open(data_dir + corpus_name, 'r', encoding='utf8').read().replace('\n', ' ')
+    # word_prob = load_word_probabilites(corpus, vocab)
+    # all_pos = load_all_possible_words(vocab)
+    # TODO write a string normalize method that takes a string and returns a string to boost the performance
+    text = 'MEhmet'
+    new_text = normalize(text)
     print('Orijinal cümle: ' + text)
     print('Normalize edilmiş cümle: ' + new_text)
 
-    list = ['lı', 'li', 'lu', 'lü', 'casına', 'çasına', 'cesine', 'çesine', 'sınız', 'siniz', 'sunuz', 'sünüz',
-            'muş', 'miş', 'müş', 'mış', 'ken', 'sın', 'sin', 'sun', 'sün', 'lar', 'ler', 'nız', 'niz', 'nuz', 'nüz',
-            'tır', 'tir', 'tur', 'tür', 'dır', 'dir', 'dur', 'dür', 'ız', 'iz', 'uz', 'üz', 'ım', 'im', 'um', 'üm',
-            'dı', 'di', 'du', 'dü', 'tı', 'ti', 'tu', 'tü', 'sa', 'se', 'm', 'n', 'k', 'ndan', 'ntan', 'nden', 'nten',
-            'ları', 'leri', 'mız', 'miz', 'muz', 'müz', 'nız', 'niz', 'nuz', 'nüz', 'lar', 'ler', 'nta', 'nte','nda',
-            'nde', 'dan', 'tan', 'den', 'ten', 'la', 'le', 'ın', 'in', 'un', 'ün', 'ca', 'ce', 'nı', 'ni', 'nu', 'nü',
-            'na', 'ne', 'da', 'de', 'ta', 'te', 'ki', 'sı', 'si', 'su', 'sü', 'yı', 'yi', 'yu', 'yü', 'ya', 'ye']
