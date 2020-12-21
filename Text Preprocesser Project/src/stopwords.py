@@ -12,9 +12,8 @@ else:
 
 nltk.download('stopwords')
 
-
-
 from nltk.corpus import stopwords
+
 print(stopwords.words('turkish'))
 
 
@@ -56,7 +55,6 @@ def identify_emails(document):
     regex = r'[\w\.-]+@[\w\.-]+'
     emails = [(m.start(0), m.end(0)) for m in re.finditer(regex, document)]
     return emails
-
 
 
 def identify_hashtags(document):
@@ -130,7 +128,7 @@ def rule_based_tokenizer(document):
     for single_token in single_token_locations_copy:
         for other_token in other_token_locations_copy:
             if single_token[0] in range(*other_token):
-                #print(single_token)
+                # print(single_token)
                 if single_token in single_token_locations:
                     single_token_locations.remove(single_token)
                 else:
@@ -141,41 +139,29 @@ def rule_based_tokenizer(document):
     all_locations.sort()
     return split_document(document, all_locations)
 
-general_folder_path="/Users/guraybaydur/Desktop/BOUN/561 NLP/Assignment1/datasets/42bin_haberv2/news/"
 
-for folder_name in os.listdir(general_folder_path):
-    i = 0
-    print(folder_name)
-    for file in os.listdir(general_folder_path + folder_name):
-        regex = r'^[0-9]+\.txt$'
-        if re.search(regex, file):
-            f = open(general_folder_path + folder_name + "/" + file, "r")
-            document = f.read()
-            #print(general_folder_path + folder_name + "/" + file)
-            result = rule_based_tokenizer(document)
-            output_file_name = general_folder_path + folder_name + "/" + file[0:len(file)-4] + "rule_based_tokenizer_and_stopwords_eliminated.txt"
-            f = open(output_file_name, "a")
-            print("/Users/guraybaydur/Desktop/BOUN/561 NLP/42bin_haber_mansur/news/" + folder_name + "/" + file[0:len(file)-4] + "_rule_based_tokenizer.txt")
-            for element in result:
-                if element not in stopwords.words('turkish'):
-                    f.write(element + "\n")
-            f.close()
-            #print(result)
-            i += 1
-        if i == 1:
-            break
+def static_eliminate_stopwords(token_list):
+    for token in token_list:
+        if token in stopwords.words('turkish'):
+            token_list.remove(token)
+    return token_list
 
-# input_file_name = "/Users/guraybaydur/Desktop/BOUN/561 NLP/Assignment1/datasets/42bin_haberv2/news/dunya/3252.txt"
-# f = open(input_file_name, "r")
-# document = f.read()
-# result = rule_based_tokenizer(document)
-# final = []
-# for element in result:
-#     if element not in stopwords.words('turkish'):
-#         print(element)
-#         final.append(element)
-#     else:
-#         print("Stopword: " + element + " is removed!!!\n")
 
-#print(result)
-#print(final)
+if __name__ == '__main__':
+
+    general_folder_path = "/Users/guraybaydur/Desktop/BOUN/561 NLP/Assignment1/datasets/42bin_haberv2/news/"
+    filename_suffix= "rule_based_tokenizer_and_stopwords_eliminated.txt"
+
+    for folder_name in os.listdir(general_folder_path):
+        for file in os.listdir(general_folder_path + folder_name):
+            regex = r'^[0-9]+\.txt$'
+            if re.search(regex, file):
+                f = open(general_folder_path + folder_name + "/" + file, "r")
+                document = f.read()
+                result = rule_based_tokenizer(document)
+                output_file_name = general_folder_path + folder_name + "/" + file[0:len(file) - 4] + filename_suffix
+                f = open(output_file_name, "a")
+                final_list = static_eliminate_stopwords(result)
+                for token in final_list:
+                    f.write(token + "\n")
+                f.close()

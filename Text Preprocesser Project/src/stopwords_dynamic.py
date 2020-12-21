@@ -68,8 +68,11 @@ def evaluate(vocab, true_labels):
     max_index = f1_scores.index(max(f1_scores)) + 20
     return determine_stopwords(vocab,max_index),max_index
 
-
-
+def dynamic_stopword_eliminate(stopwords,token_list):
+    for token in token_list:
+        if token in stopwords:
+            token_list.remove(token)
+    return token_list
 
 if __name__ == '__main__':
     data_dir = '../../../datasets/ud-treebanks-v2.7/UD_Turkish-BOUN/'
@@ -89,5 +92,9 @@ if __name__ == '__main__':
 
     generate_word_probabilities(corpus, vocab)
 
-    stopwords, max =evaluate(vocab,predefined_stopwords)
+    stopwords, max = evaluate(vocab,predefined_stopwords)
     print(max)
+    print(vocab)
+    print(determine_stopwords(vocab,max))
+    print(dynamic_stopword_eliminate(determine_stopwords(vocab,max),vocab))
+

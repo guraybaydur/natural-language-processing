@@ -43,55 +43,57 @@
 #
 import conllu
 
-data_dir = '../../../datasets/parseme_corpus_tr-master/'
-filename_begin = "train_00"
-filename_end = ".cupt"
+if __name__ == '__main__':
 
-filename = "train_001.cupt"
+    data_dir = '../../../datasets/parseme_corpus_tr-master/'
+    filename_begin = "train_00"
+    filename_end = ".cupt"
 
-mwe_lexicon = set()
+    filename = "train_001.cupt"
 
-for j in range(1, 5):
-    print(filename_begin + str(j) + filename_end)
+    mwe_lexicon = set()
 
-    with open(data_dir + filename_begin + str(j) + filename_end, 'r', encoding='utf8') as f:
-        for tokenlist in conllu.parse_incr(f):
-            for i in range(0, len(tokenlist)):
-                mwe = ""
-                # dict_keys(['id', 'form', 'lemma', 'upos', 'xpos', 'feats', 'head', 'deprel', 'deps', 'misc', 'parseme:mwe'])
-                if 'LVC.full' in tokenlist[i]['parseme:mwe']:
-                    # print(tokenlist[i]['parseme:mwe'])
-                    mwe = tokenlist[i]['form'] + " "
-                    if i + 1 < len(tokenlist):
-                        mwe += tokenlist[i + 1]['form']
-                    # print(mwe + "\n")
-                    mwe_lexicon.add(mwe)
+    for j in range(1, 5):
+        print(filename_begin + str(j) + filename_end)
 
-    with open(data_dir + "dev.cupt", 'r', encoding='utf8') as f:
-        for tokenlist in conllu.parse_incr(f):
-            for i in range(0, len(tokenlist)):
-                mwe = ""
-                # dict_keys(['id', 'form', 'lemma', 'upos', 'xpos', 'feats', 'head', 'deprel', 'deps', 'misc', 'parseme:mwe'])
-                if 'LVC.full' in tokenlist[i]['parseme:mwe']:
-                    # print(tokenlist[i]['parseme:mwe'])
-                    mwe = tokenlist[i]['form'] + " "
-                    if i + 1 < len(tokenlist):
-                        mwe += tokenlist[i + 1]['form']
-                    # print(mwe + "\n")
-                    mwe_lexicon.add(mwe)
-
-    with open(data_dir + "test.cupt", 'r', encoding='utf8') as f:
-        for tokenlist in conllu.parse_incr(f):
-            for i in range(0, len(tokenlist)):
-                mwe = ""
-                # dict_keys(['id', 'form', 'lemma', 'upos', 'xpos', 'feats', 'head', 'deprel', 'deps', 'misc', 'parseme:mwe'])
-                if 'LVC.full' in tokenlist[i]['parseme:mwe']:
-                    # print(tokenlist[i]['parseme:mwe'])
-                    mwe = tokenlist[i]['form'] + " "
-                    if i + 1 < len(tokenlist) and tokenlist[i + 1]['form'] not in ["\"", "", " ", ","]:
-                        mwe += tokenlist[i + 1]['form']
-                    # print(mwe + "\n")
+        with open(data_dir + filename_begin + str(j) + filename_end, 'r', encoding='utf8') as f:
+            for tokenlist in conllu.parse_incr(f):
+                for i in range(0, len(tokenlist)):
+                    mwe = ""
+                    # dict_keys(['id', 'form', 'lemma', 'upos', 'xpos', 'feats', 'head', 'deprel', 'deps', 'misc', 'parseme:mwe'])
+                    if 'LVC.full' in tokenlist[i]['parseme:mwe']:
+                        # print(tokenlist[i]['parseme:mwe'])
+                        mwe = tokenlist[i]['form'] + " "
+                        if i + 1 < len(tokenlist):
+                            mwe += tokenlist[i + 1]['form']
+                        # print(mwe + "\n")
                         mwe_lexicon.add(mwe)
 
-print(mwe_lexicon)
-print(len(mwe_lexicon))
+        with open(data_dir + "dev.cupt", 'r', encoding='utf8') as f:
+            for tokenlist in conllu.parse_incr(f):
+                for i in range(0, len(tokenlist)):
+                    mwe = ""
+                    # dict_keys(['id', 'form', 'lemma', 'upos', 'xpos', 'feats', 'head', 'deprel', 'deps', 'misc', 'parseme:mwe'])
+                    if 'LVC.full' in tokenlist[i]['parseme:mwe']:
+                        # print(tokenlist[i]['parseme:mwe'])
+                        mwe = tokenlist[i]['form'] + " "
+                        if i + 1 < len(tokenlist):
+                            mwe += tokenlist[i + 1]['form']
+                        # print(mwe + "\n")
+                        mwe_lexicon.add(mwe)
+
+        with open(data_dir + "test.cupt", 'r', encoding='utf8') as f:
+            for tokenlist in conllu.parse_incr(f):
+                for i in range(0, len(tokenlist)):
+                    mwe = ""
+                    # dict_keys(['id', 'form', 'lemma', 'upos', 'xpos', 'feats', 'head', 'deprel', 'deps', 'misc', 'parseme:mwe'])
+                    if 'LVC.full' in tokenlist[i]['parseme:mwe']:
+                        # print(tokenlist[i]['parseme:mwe'])
+                        mwe = tokenlist[i]['form'] + " "
+                        if i + 1 < len(tokenlist) and tokenlist[i + 1]['form'] not in ["\"", "", " ", ","]:
+                            mwe += tokenlist[i + 1]['form']
+                        # print(mwe + "\n")
+                            mwe_lexicon.add(mwe)
+
+    print(mwe_lexicon)
+    print(len(mwe_lexicon))
