@@ -46,10 +46,6 @@ def identify_emails(document):
     return emails
 
 
-f2 = open("/Users/guraybaydur/Desktop/BOUN/561 NLP/42bin_haber_mansur/news/dunya/3295.txt", "r")
-document = f2.read()
-
-
 def identify_hashtags(document):
     regex = r"\B#([^\s])*\b"
     hashtags = [(m.start(0), m.end(0)) for m in re.finditer(regex, document)]
@@ -133,24 +129,23 @@ def rule_based_tokenizer(document):
     return split_document(document, all_locations)
 
 
-for folder_name in os.listdir("/Users/guraybaydur/Desktop/BOUN/561 NLP/42bin_haber_mansur/news"):
-    #i = 0
-    print(folder_name)
-    for file in os.listdir("/Users/guraybaydur/Desktop/BOUN/561 NLP/42bin_haber_mansur/news/" + folder_name):
-        regex = r'^[0-9]+\.txt$'
-        if re.search(regex, file):
-            f = open("/Users/guraybaydur/Desktop/BOUN/561 NLP/42bin_haber_mansur/news/" + folder_name + "/" + file, "r")
-            document = f.read()
-            print("/Users/guraybaydur/Desktop/BOUN/561 NLP/42bin_haber_mansur/news/" + folder_name + "/" + file)
-            result = rule_based_tokenizer(document)
-            output_file_name = "/Users/guraybaydur/Desktop/BOUN/561 NLP/42bin_haber_mansur/news/" + folder_name + "/" + file[0:len(file)-4] + "_rule_based_tokenizer.txt"
-            f = open(output_file_name, "a")
-            #print("/Users/guraybaydur/Desktop/BOUN/561 NLP/42bin_haber_mansur/news/" + folder_name + "/" + file[0:len(file)-4] + "_rule_based_tokenizer.txt")
-            for element in result:
-                #print(element)
-                f.write(element + "\n")
-            f.close()
-            print(result)
-          #  i += 1
-        #if i == 1:
-         #   break
+if __name__ == '__main__':
+    for folder_name in os.listdir("/Users/guraybaydur/Desktop/BOUN/561 NLP/42bin_haber_mansur/news"):
+        #i = 0
+        print(folder_name)
+        for file in os.listdir("/Users/guraybaydur/Desktop/BOUN/561 NLP/42bin_haber_mansur/news/" + folder_name):
+            regex = r'^[0-9]+\.txt$'
+            if re.search(regex, file):
+                f = open("/Users/guraybaydur/Desktop/BOUN/561 NLP/42bin_haber_mansur/news/" + folder_name + "/" + file, "r")
+                document = f.read()
+                print("/Users/guraybaydur/Desktop/BOUN/561 NLP/42bin_haber_mansur/news/" + folder_name + "/" + file)
+                result = rule_based_tokenizer(document)
+                output_file_name = "/Users/guraybaydur/Desktop/BOUN/561 NLP/42bin_haber_mansur/news/" + folder_name + "/" + file[0:len(file)-4] + "_rule_based_tokenizer.txt"
+                f = open(output_file_name, "a")
+                #print("/Users/guraybaydur/Desktop/BOUN/561 NLP/42bin_haber_mansur/news/" + folder_name + "/" + file[0:len(file)-4] + "_rule_based_tokenizer.txt")
+                for element in result:
+                    #print(element)
+                    f.write(element + "\n")
+                f.close()
+                print(result)
+
