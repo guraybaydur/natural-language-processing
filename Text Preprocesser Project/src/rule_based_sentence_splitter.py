@@ -1,8 +1,10 @@
 import re
 import os
+from rule_based_tokenizer import rule_based_tokenizer
 
 def rule_based_sentence_splitter(text): #takes a list of tokens, splits it into sentences.
     # assumes that tokenization is correct
+    text = rule_based_tokenizer(text)
     in_quote = 0 # false
     sentences = []
     pos = 0
@@ -21,7 +23,7 @@ def rule_based_sentence_splitter(text): #takes a list of tokens, splits it into 
                 sentences.append(text[pos:])
     return sentences
 
-# TO DO write a function that combines tokens together in a proper string format
+
 
 if __name__ == '__main__': # adjust directory names later on
     no_space_punct = '\'\"' #before and after these no space

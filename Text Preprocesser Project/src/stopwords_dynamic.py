@@ -1,13 +1,19 @@
 import math
-
 import numpy as np
 import conllu
 import os
+import nltk
+
+nltk.download('stopwords')
+
+from nltk.corpus import stopwords
 
 
-def generate_vocab(data_dir, filename):
+def generate_vocab():
+    data_dir = '../datasets/UD_Turkish-BOUN/'
+    labelled_data = 'tr_boun-ud-train.conllu'
     vocab = []
-    with open(data_dir + filename, 'r', encoding='utf8') as f:
+    with open(data_dir + labelled_data, 'r', encoding='utf8') as f:
         for tokenlist in conllu.parse_incr(f):
             for i in tokenlist:
                 if i['upos'] != 'AUX' and i['upos'] != 'PUNCT':
@@ -21,13 +27,20 @@ def generate_vocab(data_dir, filename):
             f.write('%s\n' % i)
 
 
-def load_vocab(vocab_dir, name):
+def load_vocab():
     vocab = []
-    with open(vocab_dir + name, 'r', encoding='utf8') as f:
+    if not (os.path.exists('../vocabulary/stopword_vocab.txt')):
+        generate_vocab()
+
+    with open('../vocabulary/stopword_vocab.txt', 'r', encoding='utf8') as f:
         for i in f.readlines():
             vocab.append(i.rstrip('\n'))
     return vocab
 
+def load_corpus():
+    data_dir = '../datasets/UD_Turkish-BOUN/'
+    corpus_name = 'tr_boun-ud-train.txt'
+    return open(data_dir + corpus_name, 'r', encoding='utf8').read().replace("\n", " ")
 
 def generate_word_probabilities(corpus, vocab):
     if not os.path.exists('../vocabulary/tfs.npy'):
@@ -37,64 +50,73 @@ def generate_word_probabilities(corpus, vocab):
         for i in range(len(vocab)):
             count = corpus.count(vocab[i])
             tfs[i] = count
-            # (1 / (1 + round(math.log(term_frequency, 10), 5)))
         np.save('../vocabulary/tfs.npy', tfs)
 
-def determine_stopwords(vocab, n):
-    tfs = np.load('../vocabulary/tfs.npy')
+
+def load_word_probabilities():
+    if not os.path.exists('../vocabulary/tfs.npy'):
+        generate_word_probabilities(load_corpus(), load_vocab())
+    else:
+        return np.load('../vocabulary/tfs.npy')
+
+
+def determine_stopwords(n, tfs, vocab):
     sorted_indices = tfs.argsort()
     stopwords = [vocab[i] for i in list(sorted_indices[-n:])]
-    #print(stopwords)
-
     return stopwords
 
 
-def evaluate(vocab, true_labels):
+def evaluate(true_labels):
     f1_scores = []
-    n = range(20, 50)
+    n = range(20, 50) # range of number of stopwords
+    tfs = load_word_probabilities()
+    vocab = load_vocab()
     for i in n:
-        stopwords = determine_stopwords(vocab, i)
+        dy_stopwords = determine_stopwords(i, tfs, vocab)
         true_positives = 0
-        for elem in stopwords:
+        for elem in dy_stopwords:
             if elem in true_labels:
                 true_positives += 1
 
-        precision = true_positives / len(stopwords)
+        precision = true_positives / len(dy_stopwords)
         recall = true_positives / len(true_labels)
 
         f1_score = (2 * precision * recall) / (precision + recall)
         f1_scores.append(f1_score)
 
     max_index = f1_scores.index(max(f1_scores)) + 20
-    return determine_stopwords(vocab,max_index),max_index
+    return determine_stopwords(max_index, tfs, vocab), max_index
 
-def dynamic_stopword_eliminate(stopwords,token_list):
+
+def dynamic_stopword_eliminate(token_list):
+    dy_stopwords = evaluate(stopwords.words('turkish'))
     for token in token_list:
-        if token in stopwords:
+        if token in dy_stopwords:
             token_list.remove(token)
     return token_list
+
 
 if __name__ == '__main__':
     data_dir = '../../../datasets/ud-treebanks-v2.7/UD_Turkish-BOUN/'
     labelled_data = 'tr_boun-ud-train.conllu'
     corpus_name = 'tr_boun-ud-train.txt'
-
-    predefined_stopwords = ['acaba', 'ama', 'aslında', 'az', 'bazı', 'belki', 'biri', 'birkaç', 'birşey', 'biz', 'bu',
-                            'çok', 'çünkü', 'da', 'daha', 'de', 'defa', 'diye', 'eğer', 'en', 'gibi', 'hem', 'hep',
-                            'hepsi', 'her', 'hiç', 'için', 'ile', 'ise', 'kez', 'ki', 'kim', 'mı', 'mu', 'mü', 'nasıl',
-                            'ne', 'neden', 'nerde', 'nerede', 'nereye', 'niçin', 'niye', 'o', 'sanki', 'şey', 'siz',
-                            'şu', 'tüm', 've', 'veya', 'ya', 'yani']
-
-    if not (os.path.exists('../vocabulary/stopword_vocab.txt')):
-        generate_vocab(data_dir, labelled_data)
-    vocab = load_vocab(vocab_dir='../vocabulary/', name='stopword_vocab.txt')
-    corpus = open(data_dir + corpus_name, 'r', encoding='utf8').read().replace("\n", " ")
-
-    generate_word_probabilities(corpus, vocab)
-
-    stopwords, max = evaluate(vocab,predefined_stopwords)
-    print(max)
-    print(vocab)
-    print(determine_stopwords(vocab,max))
-    print(dynamic_stopword_eliminate(determine_stopwords(vocab,max),vocab))
+    #
+    # predefined_stopwords = ['acaba', 'ama', 'aslında', 'az', 'bazı', 'belki', 'biri', 'birkaç', 'birşey', 'biz', 'bu',
+    #                         'çok', 'çünkü', 'da', 'daha', 'de', 'defa', 'diye', 'eğer', 'en', 'gibi', 'hem', 'hep',
+    #                         'hepsi', 'her', 'hiç', 'için', 'ile', 'ise', 'kez', 'ki', 'kim', 'mı', 'mu', 'mü', 'nasıl',
+    #                         'ne', 'neden', 'nerde', 'nerede', 'nereye', 'niçin', 'niye', 'o', 'sanki', 'şey', 'siz',
+    #                         'şu', 'tüm', 've', 'veya', 'ya', 'yani']
+    #
+    # if not (os.path.exists('../vocabulary/stopword_vocab.txt')):
+    #     generate_vocab(data_dir, labelled_data)
+    # vocab = load_vocab(vocab_dir='../vocabulary/', name='stopword_vocab.txt')
+    # corpus = open(data_dir + corpus_name, 'r', encoding='utf8').read().replace("\n", " ")
+    #
+    # generate_word_probabilities(corpus, vocab)
+    #
+    # stopwords, max = evaluate(vocab,predefined_stopwords)
+    # print(max)
+    # print(vocab)
+    # print(determine_stopwords(vocab,max))
+    print(dynamic_stopword_eliminate(['için', 'nereye', 'olsa', 'da']))
 

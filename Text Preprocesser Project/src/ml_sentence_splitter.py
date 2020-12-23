@@ -3,15 +3,17 @@ import pickle
 
 
 
-def sentence_splitter(text, model):
+def ml_sentence_splitter(text):
     '''
 
     Args:
         text: given a string
-        model: Sentence splitter model
     Returns:
         sentences: list of sentences in the string
     '''
+    model_dir = '../models/sentence_splitting/'
+    with open(model_dir + 'model_liblinear.pkl', 'rb') as f:
+        model = pickle.load(f)
     eos_markers = ':.!?'
     quote_count = 0
     beg_pos = 0

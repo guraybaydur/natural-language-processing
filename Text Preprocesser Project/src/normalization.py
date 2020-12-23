@@ -4,6 +4,9 @@ import os
 from spelling_correction import create_predictions
 import re
 import itertools
+from rule_based_tokenizer import rule_based_tokenizer
+import string
+
 
 def generate_vocab():
     vocab = []
@@ -104,7 +107,29 @@ def search_error(word, vocab, all_pos, word_prob):  # spelling error correction
             return max_prob_word
 
 
-def normalize(token):
+
+def normalize(text):
+    '''
+
+    Args:
+        text: Input string to be normalized
+
+    Returns: List of normalized tokens
+
+    '''
+    punc = string.punctuation
+    vocab = load_vocab()
+    word_prob = load_word_probabilites(vocab)
+    all_pos = load_all_possible_words(vocab)
+    tokens = rule_based_tokenizer(text)
+    normalized_tokens = []
+    for token in tokens:
+        if token not in punc:
+            normalized_tokens.append(normalize_token(token, vocab, word_prob, all_pos))
+    return ' '.join(normalized_tokens)
+
+
+def normalize_token(token, vocab, word_prob, all_pos):
     '''
 
     Args:
@@ -118,12 +143,9 @@ def normalize(token):
                     'icez$':'eceğiz', 'am$':'ayım', 'em$':'eyim', 'mişin$':'mişsin', 'muşun$':'muşsun', 'oz$':'oruz'}
     # ascii pairs
     ascii_pairs = {'i':'ı', 'u':'ü', 'o':'ö', 'g':'ğ', 'c':'ç', 's': 'ş'}
-    vocab = load_vocab()
-    word_prob = load_word_probabilites(vocab)
-    all_pos = load_all_possible_words(vocab)
+
     # normalization
-    if token in vocab:
-        return token
+
     temp_word = letter_case_transformation(token)
     temp_word = accent_normalization(temp_word, pattern_subs)
     if len(set(temp_word).intersection(set(ascii_pairs.keys()))) > 0:
@@ -197,8 +219,7 @@ if __name__ == '__main__':
     # corpus = open(data_dir + corpus_name, 'r', encoding='utf8').read().replace('\n', ' ')
     # word_prob = load_word_probabilites(corpus, vocab)
     # all_pos = load_all_possible_words(vocab)
-    # TODO write a string normalize method that takes a string and returns a string to boost the performance
-    text = 'MEhmet'
+    text = 'kac yil oldu sn gelmez oldn'
     new_text = normalize(text)
     print('Orijinal cümle: ' + text)
     print('Normalize edilmiş cümle: ' + new_text)
