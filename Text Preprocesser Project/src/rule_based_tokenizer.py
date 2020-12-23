@@ -51,6 +51,26 @@ def identify_hashtags(document):
     hashtags = [(m.start(0), m.end(0)) for m in re.finditer(regex, document)]
     return hashtags
 
+def identify_multi_word_expressions(document):
+    input_file_name = "../vocabulary/verbal_mwe_lexicon.txt"
+    all_mwe_locations = []
+
+    with open(input_file_name) as f:
+        mwes = f.read().splitlines()
+
+    for mwe in mwes:
+        mwe_locations = [(m.start(0), m.end(0)) for m in re.finditer(r'\b%s\b' % mwe, document)]
+        #if len(mwe_locations) > 0:
+            # print(document)
+            # print(mwe)
+            # print(mwe_locations)
+            # x = document[mwe_locations[0][0]:mwe_locations[0][1]]
+            # print(document[mwe_locations[0][0]:mwe_locations[0][1]])
+        all_mwe_locations.extend(mwe_locations)
+
+    return all_mwe_locations
+
+
 
 # print("String is: \n" + document)
 
@@ -85,8 +105,10 @@ def rule_based_tokenizer(document):
     hashtags_tuple = identify_hashtags(document)
     urls_tuple = identify_urls(document)
     emails_tuple = identify_emails(document)
+    mwes_tuple = identify_multi_word_expressions(document)
     unambiguous_punctuations_tuple = identify_unambiguous_punctuations(document)
     proper_commas_and_dots_tuple = identify_proper_commas_and_dots(document)
+
 
     if hashtags_tuple:
         all_locations = all_locations + hashtags_tuple
@@ -94,6 +116,8 @@ def rule_based_tokenizer(document):
         all_locations = all_locations + urls_tuple
     if emails_tuple:
         all_locations = all_locations + emails_tuple
+    if mwes_tuple:
+        all_locations = all_locations + mwes_tuple
     if unambiguous_punctuations_tuple:
         all_locations = all_locations + unambiguous_punctuations_tuple
     if proper_commas_and_dots_tuple:
@@ -130,6 +154,19 @@ def rule_based_tokenizer(document):
 
 
 if __name__ == '__main__':
+
+    # This is to test mwes individually
+    # for folder_name in os.listdir("/Users/guraybaydur/Desktop/BOUN/561 NLP/Assignment1/datasets/42bin_haber_v3/news/"):
+    #     i = 0
+    #     print(folder_name)
+    #     for file in os.listdir("/Users/guraybaydur/Desktop/BOUN/561 NLP/Assignment1/datasets/42bin_haber_v3/news/" + folder_name):
+    #         regex = r'^[0-9]+\.txt$'
+    #         if file != ".DS_Store" and re.search(regex, file):
+    #             f = open("/Users/guraybaydur/Desktop/BOUN/561 NLP/Assignment1/datasets/42bin_haber_v3/news/" + folder_name + "/" + file, "r")
+    #             document = f.read()
+    #             identify_multi_word_expressions(document)
+    #             i += 1
+
     for folder_name in os.listdir("/Users/guraybaydur/Desktop/BOUN/561 NLP/42bin_haber_mansur/news"):
         #i = 0
         print(folder_name)
