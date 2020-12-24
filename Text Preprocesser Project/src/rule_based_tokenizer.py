@@ -73,6 +73,22 @@ def identify_multi_word_expressions(document):
 
 
 # print("String is: \n" + document)
+def identify_single_quote_tokens(document):
+    single_quote_locations = []
+    for char_index in range(0, len(document)):
+        # case for consecutive single quote detection e.g. ''Mavi Marmara''
+        if document[char_index] == "'" and char_index+1 < len(document) and document[char_index+1] == "'":
+            single_quote_locations.append((char_index,char_index+1))
+        elif document[char_index] == "'" and char_index-1 >= 0 and document[char_index-1] == "'":
+            continue
+
+        # case for catching beginning single quote: " 'hissedildi' "
+        if document[char_index] == "'" and char_index-1 > 0 and document[char_index-1] == " ":
+            found = False
+            while not found:
+
+
+
 
 
 def split_document(document, tuple_list):
@@ -155,6 +171,18 @@ def rule_based_tokenizer(document):
 
 if __name__ == '__main__':
 
+    folder_name = "/Users/guraybaydur/Desktop/BOUN/561 NLP/Assignment1/datasets/42bin_haber_v3/news/corpora/test/"
+
+    for file in os.listdir(folder_name):
+        with open(folder_name + file, 'r', encoding='utf8') as f:
+            document = f.read()
+            print("document: " + document)
+            print("tokenized document: " )
+            print(rule_based_tokenizer(document))
+            print("\n")
+
+
+
     # This is to test mwes individually
     # for folder_name in os.listdir("/Users/guraybaydur/Desktop/BOUN/561 NLP/Assignment1/datasets/42bin_haber_v3/news/"):
     #     i = 0
@@ -167,22 +195,22 @@ if __name__ == '__main__':
     #             identify_multi_word_expressions(document)
     #             i += 1
 
-    for folder_name in os.listdir("/Users/guraybaydur/Desktop/BOUN/561 NLP/42bin_haber_mansur/news"):
-        #i = 0
-        print(folder_name)
-        for file in os.listdir("/Users/guraybaydur/Desktop/BOUN/561 NLP/42bin_haber_mansur/news/" + folder_name):
-            regex = r'^[0-9]+\.txt$'
-            if re.search(regex, file):
-                f = open("/Users/guraybaydur/Desktop/BOUN/561 NLP/42bin_haber_mansur/news/" + folder_name + "/" + file, "r")
-                document = f.read()
-                print("/Users/guraybaydur/Desktop/BOUN/561 NLP/42bin_haber_mansur/news/" + folder_name + "/" + file)
-                result = rule_based_tokenizer(document)
-                output_file_name = "/Users/guraybaydur/Desktop/BOUN/561 NLP/42bin_haber_mansur/news/" + folder_name + "/" + file[0:len(file)-4] + "_rule_based_tokenizer.txt"
-                f = open(output_file_name, "a")
-                #print("/Users/guraybaydur/Desktop/BOUN/561 NLP/42bin_haber_mansur/news/" + folder_name + "/" + file[0:len(file)-4] + "_rule_based_tokenizer.txt")
-                for element in result:
-                    #print(element)
-                    f.write(element + "\n")
-                f.close()
-                print(result)
+    # for folder_name in os.listdir("/Users/guraybaydur/Desktop/BOUN/561 NLP/42bin_haber_mansur/news"):
+    #     #i = 0
+    #     print(folder_name)
+    #     for file in os.listdir("/Users/guraybaydur/Desktop/BOUN/561 NLP/42bin_haber_mansur/news/" + folder_name):
+    #         regex = r'^[0-9]+\.txt$'
+    #         if re.search(regex, file):
+    #             f = open("/Users/guraybaydur/Desktop/BOUN/561 NLP/42bin_haber_mansur/news/" + folder_name + "/" + file, "r")
+    #             document = f.read()
+    #             print("/Users/guraybaydur/Desktop/BOUN/561 NLP/42bin_haber_mansur/news/" + folder_name + "/" + file)
+    #             result = rule_based_tokenizer(document)
+    #             output_file_name = "/Users/guraybaydur/Desktop/BOUN/561 NLP/42bin_haber_mansur/news/" + folder_name + "/" + file[0:len(file)-4] + "_rule_based_tokenizer.txt"
+    #             f = open(output_file_name, "a")
+    #             #print("/Users/guraybaydur/Desktop/BOUN/561 NLP/42bin_haber_mansur/news/" + folder_name + "/" + file[0:len(file)-4] + "_rule_based_tokenizer.txt")
+    #             for element in result:
+    #                 #print(element)
+    #                 f.write(element + "\n")
+    #             f.close()
+    #             print(result)
 

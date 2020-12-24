@@ -1,7 +1,7 @@
 import conllu
 
 def search_mwe_tags(mwe_tags):
-    data_dir = '../../../datasets/parseme_corpus_tr-master/'
+    data_dir = '../datasets/parseme_corpus_tr-master/'
     filename_begin = "train_00"
     filename_end = ".cupt"
 
