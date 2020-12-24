@@ -55,7 +55,7 @@ def identify_multi_word_expressions(document):
     input_file_name = "../vocabulary/verbal_mwe_lexicon.txt"
     all_mwe_locations = []
 
-    with open(input_file_name) as f:
+    with open(input_file_name, 'r', encoding='utf8') as f:
         mwes = f.read().splitlines()
 
     for mwe in mwes:
@@ -86,6 +86,7 @@ def identify_single_quote_tokens(document):
         if document[char_index] == "'" and char_index-1 > 0 and document[char_index-1] == " ":
             found = False
             while not found:
+
 
 
 
