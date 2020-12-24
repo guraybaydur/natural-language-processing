@@ -3,7 +3,7 @@ import numpy as np
 import conllu
 import os
 import nltk
-
+from stemmer import stemmer
 #nltk.download('stopwords')
 
 from nltk.corpus import stopwords
@@ -95,9 +95,14 @@ def dynamic_stopword_eliminate(token_list):
                                                     'ne', 'neden', 'nerde', 'nerede', 'nereye', 'niçin', 'niye', 'o', 'sanki', 'şey', 'siz',
                                                     'şu', 'tüm', 've', 'veya', 'ya', 'yani']
     dy_stopwords = evaluate(predefined_stopwords)
+    stemmed_tokens = []
     for token in token_list:
-        if token in dy_stopwords:
-            token_list.remove(token)
+        stemmed_tokens.append(stemmer(token))
+    new_list = []
+    for token, i in zip(token_list, range(len(token_list))):
+        if token not in dy_stopwords and stemmed_tokens[i] not in dy_stopwords:
+            new_list.append(token)
+
     return token_list
 
 

@@ -40,6 +40,7 @@ def load_corpus():
     corpus = open('../datasets/UD_Turkish-BOUN/' + 'tr_boun-ud-train.txt', 'r', encoding='utf8').read().replace('\n', ' ')
     return corpus
 
+
 def generate_word_probabilities(vocab):
     corpus = load_corpus().split()
     size = len(corpus)
@@ -79,24 +80,41 @@ def load_all_possible_words(vocab):
     return all_pos
 
 
-def search_error(word, vocab, all_pos, word_prob):  # spelling error correction
-    '''
+# def search_error(word, vocab, all_pos, word_prob):  # spelling error correction
+#     '''
+#
+#     Args:
+#         word: input word to correct its spelling
+#         vocab:
+#         all_pos: list of all possible words that are one edit distance away from the all the words in the vocab
+#         word_prob: prior word probabilities generated on the corpus
+#
+#     Returns: corrected word
+#
+#     '''
+#     if word in vocab:
+#         return word
+#     else:
+#         indices = []
+#         for i in range(len(all_pos)):
+#             if word in all_pos[i]:
+#                 indices.append(i)
+#         if len(indices) == 0:  # no candidate in the data
+#             print('No candidate for word ' + word)
+#             return word
+#         else: # candidates found
+#             word_probs = np.argsort(word_prob[indices])
+#             max_prob_word = vocab[indices[word_probs[-1]]]
+#             return max_prob_word
 
-    Args:
-        word: input word to correct its spelling
-        vocab:
-        all_pos: list of all possible words that are one edit distance away from the all the words in the vocab
-        word_prob: prior word probabilities generated on the corpus
-
-    Returns: corrected word
-
-    '''
+def search_error(word, vocab, word_prob):
     if word in vocab:
         return word
     else:
         indices = []
-        for i in range(len(all_pos)):
-            if word in all_pos[i]:
+        pos = create_predictions(word) # for each word in vocab check if it is in the predictions
+        for w, i in zip(vocab, range(len(vocab))):
+            if w in pos:
                 indices.append(i)
         if len(indices) == 0:  # no candidate in the data
             print('No candidate for word ' + word)
@@ -105,7 +123,6 @@ def search_error(word, vocab, all_pos, word_prob):  # spelling error correction
             word_probs = np.argsort(word_prob[indices])
             max_prob_word = vocab[indices[word_probs[-1]]]
             return max_prob_word
-
 
 
 def normalize(text):
@@ -120,16 +137,18 @@ def normalize(text):
     punc = string.punctuation
     vocab = load_vocab()
     word_prob = load_word_probabilites(vocab)
-    all_pos = load_all_possible_words(vocab)
+    #all_pos = load_all_possible_words(vocab)
     tokens = rule_based_tokenizer(text)
     normalized_tokens = []
     for token in tokens:
         if token not in punc:
-            normalized_tokens.append(normalize_token(token, vocab, word_prob, all_pos))
-    return ' '.join(normalized_tokens)
+            normalized_tokens.append(normalize_token(token, vocab, word_prob))
+        else:
+            normalized_tokens.append(token)
+    return normalized_tokens
 
 
-def normalize_token(token, vocab, word_prob, all_pos):
+def normalize_token(token, vocab, word_prob):
     '''
 
     Args:
@@ -150,7 +169,7 @@ def normalize_token(token, vocab, word_prob, all_pos):
     temp_word = accent_normalization(temp_word, pattern_subs)
     if len(set(temp_word).intersection(set(ascii_pairs.keys()))) > 0:
         temp_word = deascification(temp_word, vocab, ascii_pairs)
-    temp_word = search_error(temp_word, vocab, all_pos, word_prob)
+    temp_word = search_error(temp_word, vocab, word_prob)
 
     return temp_word
 
