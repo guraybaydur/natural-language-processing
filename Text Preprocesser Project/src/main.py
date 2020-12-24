@@ -97,8 +97,7 @@ if __name__ == '__main__':
                     break
                 else:
                     if user_input == 1:
-                        token_list = rule_based_tokenizer(text)
-                        processed_text = rule_based_sentence_splitter(token_list)
+                        processed_text = rule_based_sentence_splitter(text)
                     elif user_input == 2:
                         processed_text = ml_sentence_splitter(text)
                     else:
@@ -152,4 +151,7 @@ if __name__ == '__main__':
                     else:
                         print('Invalid Choice')
                         continue
+
+        print(processed_text)
+        print('-------------- ** ----------------')
     print('Program finished')
