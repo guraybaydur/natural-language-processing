@@ -38,5 +38,5 @@ def ml_tokenizer(text):
 
 if __name__ == '__main__':
     text = 'Tunceli Valiliği\'nden yapılan yazılı açıklamada, "Tunceli İl Jandarma Komutanlığı\'nca devam etmekte olan askeri çalışmalar nedeniyle aşağıda koordinatları belirlenen alanlara İl İdaresi Kanunu\'nun 11. maddesi gereğince, 6 Ekim 2012 günü saat 00.01\'den itibaren 45 gün süreyle yasaklama getirilmiş olup, belirlenen alanlara yaklaşılmaması kamuoyuna saygıyla duyurulur" denildi. Merkeze bağlı Çiçekli, Çılga ve Demirkapı köylerinin boş arazileri ile Zarkovit ve Çaldıran tepeleri arasında kalan bölgeyi de kapsayan bazı tepelik alanlara giriş yasağı konulduğunun belirtildiği açıklamada, bu alanların koordinatlarına da yer verildi.'
-    tokens = tokenize(text)
+    tokens = ml_tokenizer(text)
     # error in 11. and "Tunceli 

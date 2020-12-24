@@ -134,6 +134,7 @@ def split_document(document, tuple_list):
             result += document[start:end] + ' '
         start = tup[1] + 1
 
+    result += document[start:]
     token_list = result.split()
     for i in range(len(token_list)):
         if '|' in token_list[i]:
