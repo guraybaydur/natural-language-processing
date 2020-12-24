@@ -51,6 +51,7 @@ def identify_hashtags(document):
     hashtags = [(m.start(0), m.end(0)) for m in re.finditer(regex, document)]
     return hashtags
 
+
 def identify_multi_word_expressions(document):
     input_file_name = "../vocabulary/verbal_mwe_lexicon.txt"
     all_mwe_locations = []
@@ -59,17 +60,14 @@ def identify_multi_word_expressions(document):
         mwes = f.read().splitlines()
 
     for mwe in mwes:
-        mwe_locations = [(m.start(0), m.end(0)) for m in re.finditer(r'\b%s\b' % mwe, document)]
-        #if len(mwe_locations) > 0:
-            # print(document)
-            # print(mwe)
-            # print(mwe_locations)
-            # x = document[mwe_locations[0][0]:mwe_locations[0][1]]
-            # print(document[mwe_locations[0][0]:mwe_locations[0][1]])
+        mwe_locations = [(m.start(0), m.end(0)-1) for m in re.finditer(r'\b%s\b' % mwe, document)]
+        for i in range(len(mwe_locations)):
+            mwe_locations[i] += (-1,)
+
+
         all_mwe_locations.extend(mwe_locations)
 
     return all_mwe_locations
-
 
 
 # print("String is: \n" + document)
@@ -77,25 +75,53 @@ def identify_single_quote_tokens(document):
     single_quote_locations = []
     for char_index in range(0, len(document)):
         # case for consecutive single quote detection e.g. ''Mavi Marmara''
-        if document[char_index] == "'" and char_index+1 < len(document) and document[char_index+1] == "'":
-            single_quote_locations.append((char_index,char_index+1))
-        elif document[char_index] == "'" and char_index-1 >= 0 and document[char_index-1] == "'":
+        if document[char_index] == "'" and char_index + 1 < len(document) and document[char_index + 1] == "'":
+            # print("here")
+            # print(document[char_index:char_index+2])
+            single_quote_locations.append((char_index, char_index + 2))
+        elif document[char_index] == "'" and char_index - 1 >= 0 and document[char_index - 1] == "'":
             continue
 
+        indexes = ()
         # case for catching beginning single quote: " 'hissedildi' "
-        if document[char_index] == "'" and char_index-1 > 0 and document[char_index-1] == " ":
+        if (document[char_index] == "'" and char_index - 1 > 0 and document[char_index - 1] == " ") or (document[char_index] == "'" and char_index == 0):
+            indexes = (char_index,)
             found = False
-            while not found:
+            while not found and char_index < len(document):
+                char_index += 1
+                if char_index < len(document) and document[char_index] == "'":
+                    if char_index + 1 < len(document) and (
+                            document[char_index + 1] == " " or document[char_index + 1] == ","):
+                        indexes += (char_index + 1,)
+                        found = True
 
 
+        if char_index == len(document):
+            break
+        elif indexes != ():
+            # print("indexes[0]: " + str(indexes[0]) + " " + "indexes[1]: " + str(indexes[1]) +" document[indexes[1]]: " +  document[indexes[1]]  + " text: " + document[
+            #                                                                                       indexes[0]:indexes[
+            #                                                                                          1]])
+            single_quote_locations.append(indexes)
 
+    final_single_quote_locations = set()
+    for elem in single_quote_locations:
+        print(elem)
+        final_single_quote_locations.add((elem[0], elem[0]))
+        final_single_quote_locations.add((elem[1] - 1, elem[1] - 1))
 
+    single_quote_locations = list(final_single_quote_locations)
+
+    return single_quote_locations
 
 
 def split_document(document, tuple_list):
     tuple_list_index = 0
     result = ""
     char_index = 0
+
+    for tuple in tuple_list:
+        result = document[tuple[0]:tuple[1] + 1]
 
     while char_index != len(document):
         if tuple_list_index < len(tuple_list):
@@ -123,9 +149,9 @@ def rule_based_tokenizer(document):
     urls_tuple = identify_urls(document)
     emails_tuple = identify_emails(document)
     mwes_tuple = identify_multi_word_expressions(document)
+    single_quotes_tuple = identify_single_quote_tokens(document)
     unambiguous_punctuations_tuple = identify_unambiguous_punctuations(document)
     proper_commas_and_dots_tuple = identify_proper_commas_and_dots(document)
-
 
     if hashtags_tuple:
         all_locations = all_locations + hashtags_tuple
@@ -135,10 +161,16 @@ def rule_based_tokenizer(document):
         all_locations = all_locations + emails_tuple
     if mwes_tuple:
         all_locations = all_locations + mwes_tuple
+    if single_quotes_tuple:
+        all_locations = all_locations + single_quotes_tuple
     if unambiguous_punctuations_tuple:
         all_locations = all_locations + unambiguous_punctuations_tuple
     if proper_commas_and_dots_tuple:
         all_locations = all_locations + proper_commas_and_dots_tuple
+
+    for i in range(len(all_locations)):
+        if len(all_locations[i]) == 2:
+            all_locations[i] += (1,)
 
     all_locations.sort()
 
@@ -146,7 +178,7 @@ def rule_based_tokenizer(document):
     other_token_locations = []
 
     for tuple in all_locations:
-        [start, end] = [*tuple]
+        [start, end,_] = [*tuple]
         if end == start:
             single_token_locations.append(tuple)
         else:
@@ -170,19 +202,39 @@ def rule_based_tokenizer(document):
     return split_document(document, all_locations)
 
 
+def write_tokens_to_file(output_file_name, tokenlist):
+    f = open(output_file_name, "a")
+    for mwe in tokenlist:
+        f.write(mwe + "\n")
+    f.close()
+
+
 if __name__ == '__main__':
 
     folder_name = "/Users/guraybaydur/Desktop/BOUN/561 NLP/Assignment1/datasets/42bin_haber_v3/news/corpora/test/"
 
     for file in os.listdir(folder_name):
-        with open(folder_name + file, 'r', encoding='utf8') as f:
-            document = f.read()
-            print("document: " + document)
-            print("tokenized document: " )
-            print(rule_based_tokenizer(document))
-            print("\n")
+        print(file)
+        if file != ".DS_Store":
+            with open(folder_name + file, 'r', encoding='utf8') as f:
+                document = f.read()
+                tokenlist = rule_based_tokenizer(document)
+                write_tokens_to_file(folder_name + file[0:len(file)-4] + "rule_based_tokenized.txt", tokenlist)
+ #               mwe_locations = identify_multi_word_expressions(document)
 
-
+                # for mwe in mwe_locations:
+                #     print(document[mwe[0]:mwe[1]])
+                #tokenlist = rule_based_tokenizer(document)
+                #write_tokens_to_file(folder_name + file[0:len(file)-4] + "rule_based_tokenized.txt", tokenlist)
+                # print("document: " + document)
+                # print("single quote locations: ")
+                # x = identify_single_quote_tokens(document)
+                # print(identify_single_quote_tokens(document))
+                # for elem in x:
+                #     if elem[0]-4 >0 and elem[0]+4 <len(document):
+                #         print("characters before and after singe quote: " + document[elem[0]-4:elem[0]+4])
+                #     #print(document[elem[0]])
+                print("\n")
 
     # This is to test mwes individually
     # for folder_name in os.listdir("/Users/guraybaydur/Desktop/BOUN/561 NLP/Assignment1/datasets/42bin_haber_v3/news/"):
@@ -214,4 +266,3 @@ if __name__ == '__main__':
     #                 f.write(element + "\n")
     #             f.close()
     #             print(result)
-
