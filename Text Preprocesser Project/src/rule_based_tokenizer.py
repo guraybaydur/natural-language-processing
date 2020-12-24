@@ -119,27 +119,44 @@ def split_document(document, tuple_list):
     tuple_list_index = 0
     result = ""
     char_index = 0
+    start = 0
+    end = 0
 
-    for tuple in tuple_list:
-        result = document[tuple[0]:tuple[1] + 1]
-
-    while char_index != len(document):
-        if tuple_list_index < len(tuple_list):
-            while char_index < tuple_list[tuple_list_index][0]:
-                result += document[char_index]
-                char_index += 1
-            result += " "
-            while char_index < tuple_list[tuple_list_index][1]:
-                result += document[char_index]
-                char_index += 1
-            if char_index < len(document):
-                result = result + document[char_index] + " "
-                tuple_list_index += 1
-                char_index += 1
+    for tup, i in zip(tuple_list, range(len(tuple_list))):
+        end = tup[0]
+        result = result + document[start:end] + ' '
+        start = tup[0]
+        end = tup[1] + 1
+        if tup[2] == -1:  #mwe
+            temp = document[start:end].replace(' ', '|')
+            result += temp + ' '
         else:
-            result += document[char_index]
-            char_index += 1
-    return result.split()
+            result += document[start:end] + ' '
+        start = tup[1] + 1
+
+    token_list = result.split()
+    for i in range(len(token_list)):
+        if '|' in token_list[i]:
+            token_list[i] = token_list[i].replace('|', ' ')
+    return token_list
+
+    # while char_index != len(document):
+    #     if tuple_list_index < len(tuple_list):
+    #         while char_index < tuple_list[tuple_list_index][0]:
+    #             result += document[char_index]
+    #             char_index += 1
+    #         result += " "
+    #         while char_index < tuple_list[tuple_list_index][1]:
+    #             result += document[char_index]
+    #             char_index += 1
+    #         if char_index < len(document):
+    #             result = result + document[char_index] + " "
+    #             tuple_list_index += 1
+    #             char_index += 1
+    #     else:
+    #         result += document[char_index]
+    #         char_index += 1
+    # return result.split()
 
 
 def rule_based_tokenizer(document):
@@ -203,7 +220,7 @@ def rule_based_tokenizer(document):
 
 
 def write_tokens_to_file(output_file_name, tokenlist):
-    f = open(output_file_name, "a")
+    f = open(output_file_name, "a", encoding='utf8')
     for mwe in tokenlist:
         f.write(mwe + "\n")
     f.close()
@@ -211,11 +228,11 @@ def write_tokens_to_file(output_file_name, tokenlist):
 
 if __name__ == '__main__':
 
-    folder_name = "/Users/guraybaydur/Desktop/BOUN/561 NLP/Assignment1/datasets/42bin_haber_v3/news/corpora/test/"
+    folder_name = "../"
 
     for file in os.listdir(folder_name):
         print(file)
-        if file != ".DS_Store":
+        if '.txt' in file:
             with open(folder_name + file, 'r', encoding='utf8') as f:
                 document = f.read()
                 tokenlist = rule_based_tokenizer(document)
