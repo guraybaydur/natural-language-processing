@@ -4,7 +4,7 @@ import conllu
 import os
 import nltk
 
-nltk.download('stopwords')
+#nltk.download('stopwords')
 
 from nltk.corpus import stopwords
 
@@ -89,7 +89,12 @@ def evaluate(true_labels):
 
 
 def dynamic_stopword_eliminate(token_list):
-    dy_stopwords = evaluate(stopwords.words('turkish'))
+    predefined_stopwords = ['acaba', 'ama', 'aslında', 'az', 'bazı', 'belki', 'biri', 'birkaç', 'birşey', 'biz', 'bu',
+                                                    'çok', 'çünkü', 'da', 'daha', 'de', 'defa', 'diye', 'eğer', 'en', 'gibi', 'hem', 'hep',
+                                                    'hepsi', 'her', 'hiç', 'için', 'ile', 'ise', 'kez', 'ki', 'kim', 'mı', 'mu', 'mü', 'nasıl',
+                                                    'ne', 'neden', 'nerde', 'nerede', 'nereye', 'niçin', 'niye', 'o', 'sanki', 'şey', 'siz',
+                                                    'şu', 'tüm', 've', 'veya', 'ya', 'yani']
+    dy_stopwords = evaluate(predefined_stopwords)
     for token in token_list:
         if token in dy_stopwords:
             token_list.remove(token)
@@ -101,7 +106,7 @@ if __name__ == '__main__':
     labelled_data = 'tr_boun-ud-train.conllu'
     corpus_name = 'tr_boun-ud-train.txt'
     #
-    # predefined_stopwords = ['acaba', 'ama', 'aslında', 'az', 'bazı', 'belki', 'biri', 'birkaç', 'birşey', 'biz', 'bu',
+    #predefined_stopwords = ['acaba', 'ama', 'aslında', 'az', 'bazı', 'belki', 'biri', 'birkaç', 'birşey', 'biz', 'bu',
     #                         'çok', 'çünkü', 'da', 'daha', 'de', 'defa', 'diye', 'eğer', 'en', 'gibi', 'hem', 'hep',
     #                         'hepsi', 'her', 'hiç', 'için', 'ile', 'ise', 'kez', 'ki', 'kim', 'mı', 'mu', 'mü', 'nasıl',
     #                         'ne', 'neden', 'nerde', 'nerede', 'nereye', 'niçin', 'niye', 'o', 'sanki', 'şey', 'siz',
